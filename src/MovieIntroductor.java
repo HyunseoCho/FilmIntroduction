@@ -1,6 +1,7 @@
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
@@ -58,17 +59,24 @@ public class MovieIntroductor {
 	}
 	public List<Movie> readMovies() {
 		//this is a method that calls movies from the file
-		List<Movie> movies=null;
+		List<Movie> movies = new ArrayList<Movie>();
 		try{
 			FileInputStream fis =
 					new FileInputStream(filename);
-			ObjectInputStream ois =
-					new ObjectInputStream(fis);
-			movies = (List<Movie>)ois.readObject();
-			fis.close();
+			ObjectInput ois;
+			if (fis.available() > 0) {
+				ois = new ObjectInputStream(fis);
+			}		
+			while (ois.available() > 0) {
+				Movie movie = (Movie) ois.readObject();
+				movies.add(movie);
+			}
+//			movies = (List<Movie>)ois.readObject();
+//			fis.close();
 		}
 		catch(Throwable e){
-			System.err.println(e);
+//			System.err.println(e);
+			e.printStackTrace();
 		}
 		return movies;
 	}
@@ -78,16 +86,18 @@ public class MovieIntroductor {
 			FileOutputStream f = new FileOutputStream(filename);
 			ObjectOutput s = new ObjectOutputStream(f);
 			
-			s.writeObject(this.movies);
+			for (int i = 0; i < this.movies.size(); i++) {
+				Movie movie = this.movies.get(i);
+				s.writeObject(movie);
+			}
+			
 			s.flush();
 		}
 		catch(IOException e){
-			
-			System.out.println(new Movie());
+			e.printStackTrace();
 		}
 	}
 	public String getFilename() {
-	
 		return filename;
 	}
 	public void setFilename(String filename) {
